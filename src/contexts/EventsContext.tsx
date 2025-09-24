@@ -73,7 +73,14 @@ const mockEvents: Event[] = [
 export const EventsProvider: React.FC<EventsProviderProps> = ({ children }) => {
   const [events, setEvents] = useState<Event[]>(() => {
     const saved = localStorage.getItem('iff-events');
-    return saved ? JSON.parse(saved) : mockEvents;
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      return parsed.map((event: Event) => ({
+        ...event,
+        createdAt: new Date(event.createdAt),
+      }));
+    }
+    return mockEvents;
   });
 
   // Save to localStorage whenever events change
