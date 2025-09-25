@@ -8,6 +8,7 @@ import EventCard from '@/components/EventCard';
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { toast } from '@/hooks/use-toast';
+import QRCodeDialog from '@/components/QRCodeDialog';
 
 const MainEventDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -114,6 +115,7 @@ const MainEventDetail = () => {
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
+                  <QRCodeDialog url={window.location.href} eventName={mainEvent.title} />
                 </div>
               )}
             </CardContent>

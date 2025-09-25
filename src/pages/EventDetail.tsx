@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
+import QRCodeDialog from '@/components/QRCodeDialog';
 
 const EventDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -219,6 +220,7 @@ const EventDetail = () => {
                             </AlertDialogFooter>
                           </AlertDialogContent>
                         </AlertDialog>
+                        <QRCodeDialog url={window.location.href} eventName={event.title} />
                       </div>
                     )}
                   </div>
