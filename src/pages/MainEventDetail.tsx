@@ -1,3 +1,4 @@
+import React, { useState } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useEvents } from '@/contexts/EventsContext';
 import { useAuth } from '@/contexts/AuthContext';
@@ -26,6 +27,7 @@ const MainEventDetail = () => {
   } = useEvents();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [selectedDate, setSelectedDate] = useState<string>('all');
 
   if (!id) {
     return <div>Evento principal não encontrado</div>;
@@ -38,6 +40,12 @@ const MainEventDetail = () => {
   if (!mainEvent) {
     return <div>Evento principal não encontrado</div>;
   }
+
+  const mainEventDates = mainEvent.schedule ? [...new Set(mainEvent.schedule.map(s => s.date))] : [];
+
+  const filteredSubEvents = selectedDate === 'all' 
+    ? subEvents 
+    : subEvents.filter(subEvent => subEvent.schedule.some(s => s.date === selectedDate));
 
   const isOrganizer = user?.id === mainEvent.organizerId;
 
@@ -157,16 +165,32 @@ const MainEventDetail = () => {
           </Card>
 
           <div>
-            <h2 className="text-xl font-bold text-foreground mb-4">Sub-eventos</h2>
-            {subEvents.length > 0 ? (
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-bold text-foreground">Sub-eventos</h2>
+              {mainEventDates.length > 1 && (
+                <div className="flex items-center gap-2">
+                  <Button variant={selectedDate === 'all' ? 'default' : 'outline'} onClick={() => setSelectedDate('all')}>Todos</Button>
+                  {mainEventDates.map(date => (
+                    <Button 
+                      key={date} 
+                      variant={selectedDate === date ? 'default' : 'outline'}
+                      onClick={() => setSelectedDate(date)}
+                    >
+                      {new Date(date + 'T00:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}
+                    </Button>
+                  ))}
+                </div>
+              )}
+            </div>
+            {filteredSubEvents.length > 0 ? (
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {subEvents.map(subEvent => (
+                {filteredSubEvents.map(subEvent => (
                   <EventCard 
                     key={subEvent.id} 
                     event={subEvent} 
                     showRegisterButton={true}
                     isRegistered={isUserRegistered(subEvent.id)}
-                    isInWaitlist={isUserInWaitlist(subEvent.id, user.id)}
+                    isInWaitlist={user ? isUserInWaitlist(subEvent.id, user.id) : false}
                     onRegister={handleRegister}
                     onUnregister={handleUnregister}
                     onJoinWaitlist={handleJoinWaitlist}

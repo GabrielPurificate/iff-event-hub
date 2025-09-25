@@ -123,6 +123,23 @@ const EventForm: React.FC<EventFormProps> = ({ isEditMode = false }) => {
       }
     }
 
+    if (eventType === 'sub' && parentId) {
+      const mainEvent = getEventById(parentId);
+      if (mainEvent && mainEvent.schedule) {
+        const mainEventDates = mainEvent.schedule.map(s => s.date);
+        for (const entry of formData.schedule) {
+          if (!mainEventDates.includes(entry.date)) {
+            toast({
+              title: "Data do sub-evento inválida",
+              description: `A data ${entry.date} do sub-evento não está no período do evento principal.`,
+              variant: "destructive",
+            });
+            return;
+          }
+        }
+      }
+    }
+
     setLoading(true);
     
     try {
