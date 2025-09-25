@@ -13,14 +13,14 @@ import { useToast } from '@/hooks/use-toast';
 
 const Dashboard = () => {
   const { user } = useAuth();
-  const { getUpcomingEvents, registerForEvent, unregisterFromEvent, getUserEvents } = useEvents();
+  const { getMainEvents, registerForEvent, unregisterFromEvent, getUserEvents } = useEvents();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
 
-  const upcomingEvents = getUpcomingEvents();
+  const mainEvents = getMainEvents();
   const userEvents = user ? getUserEvents(user.id) : [];
 
-  const filteredEvents = upcomingEvents.filter(event =>
+  const filteredEvents = mainEvents.filter(event =>
     event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     event.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
     event.organizer.toLowerCase().includes(searchTerm.toLowerCase())
@@ -78,7 +78,7 @@ const Dashboard = () => {
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mt-6">
             <div className="flex items-center space-x-2 text-sm text-muted-foreground">
               <Calendar className="w-4 h-4 text-primary" />
-              <span>{upcomingEvents.length} eventos próximos</span>
+              <span>{mainEvents.length} eventos principais</span>
             </div>
             <div className="flex items-center space-x-2 text-sm text-muted-foreground">
               <Users className="w-4 h-4 text-primary" />
@@ -111,7 +111,7 @@ const Dashboard = () => {
         <Tabs defaultValue="all" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
             <TabsTrigger value="all">
-              Todos os Eventos
+              Eventos Principais
               <Badge variant="secondary" className="ml-2">
                 {filteredEvents.length}
               </Badge>
@@ -144,10 +144,10 @@ const Dashboard = () => {
                   <EventCard
                     key={event.id}
                     event={event}
-                    showRegisterButton={true}
                     isRegistered={isUserRegistered(event.id)}
                     onRegister={handleRegister}
                     onUnregister={handleUnregister}
+                    linkTo={`/event/main/${event.id}`}
                   />
                 ))}
               </div>

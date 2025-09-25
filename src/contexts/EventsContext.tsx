@@ -13,16 +13,21 @@ export interface Event {
   location?: string;
   category?: string;
   createdAt: Date;
+  parentId?: string;
 }
 
 interface EventsContextType {
   events: Event[];
   addEvent: (event: Omit<Event, 'id' | 'attendees' | 'createdAt'>) => void;
+  updateEvent: (eventId: string, eventData: Partial<Event>) => void;
+  deleteEvent: (eventId: string) => void;
   registerForEvent: (eventId: string, userId: string) => boolean;
   unregisterFromEvent: (eventId: string, userId: string) => void;
   getEventById: (id: string) => Event | undefined;
   getUserEvents: (userId: string) => Event[];
   getUpcomingEvents: () => Event[];
+  getMainEvents: () => Event[];
+  getSubEvents: (parentId: string) => Event[];
 }
 
 const EventsContext = createContext<EventsContextType | undefined>(undefined);
@@ -46,27 +51,59 @@ const mockEvents: Event[] = [
     description: 'Uma semana completa de palestras, workshops e hackathons sobre as mais novas tecnologias.',
     date: '2024-10-15',
     time: '08:00',
-    organizer: 'Prof. João Silva',
-    organizerId: 'prof-joao',
-    attendees: ['user1', 'user2'],
-    maxAttendees: 100,
-    location: 'Auditório Principal',
+    organizer: 'Coordenação de TADS',
+    organizerId: 'organizer-id',
+    attendees: [],
+    maxAttendees: 500,
+    location: 'IFF Campos Centro',
     category: 'Tecnologia',
-    createdAt: new Date('2024-09-01')
+    createdAt: new Date('2024-09-01'),
+    parentId: undefined,
   },
   {
     id: '2',
     title: 'Workshop de React e Node.js',
     description: 'Aprenda a desenvolver aplicações modernas com React no frontend e Node.js no backend.',
-    date: '2024-10-22',
+    date: '2024-10-15',
     time: '14:00',
     organizer: 'Prof. Maria Santos',
-    organizerId: 'prof-maria',
+    organizerId: 'organizer-id',
     attendees: ['user3'],
     maxAttendees: 30,
     location: 'Laboratório de Informática 1',
     category: 'Programação',
-    createdAt: new Date('2024-09-05')
+    createdAt: new Date('2024-09-05'),
+    parentId: '1',
+  },
+  {
+    id: '3',
+    title: 'Palestra sobre Inteligência Artificial',
+    description: 'Descubra o futuro da IA e suas aplicações no mercado de trabalho.',
+    date: '2024-10-16',
+    time: '10:00',
+    organizer: 'Prof. Carlos Pereira',
+    organizerId: 'organizer-id',
+    attendees: [],
+    maxAttendees: 100,
+    location: 'Auditório Principal',
+    category: 'Inteligência Artificial',
+    createdAt: new Date('2024-09-06'),
+    parentId: '1',
+  },
+  {
+    id: '4',
+    title: 'Minicurso de Docker',
+    description: 'Aprenda a containerizar suas aplicações com Docker.',
+    date: '2024-10-17',
+    time: '09:00',
+    organizer: 'Prof. Ana Souza',
+    organizerId: 'organizer-id',
+    attendees: [],
+    maxAttendees: 25,
+    location: 'Laboratório de Redes',
+    category: 'DevOps',
+    createdAt: new Date('2024-09-07'),
+    parentId: '1',
   }
 ];
 
@@ -97,6 +134,18 @@ export const EventsProvider: React.FC<EventsProviderProps> = ({ children }) => {
     };
     setEvents(prev => [...prev, newEvent]);
   };
+
+  const updateEvent = (eventId: string, eventData: Partial<Event>) => {
+    setEvents(prev => prev.map(e => e.id === eventId ? { ...e, ...eventData } : e));
+  };
+
+  const deleteEvent = (eventId: string) => {
+    setEvents(prev => prev.filter(e => e.id !== eventId));
+  };
+
+  const getMainEvents = () => events.filter(e => !e.parentId);
+
+  const getSubEvents = (parentId: string) => events.filter(e => e.parentId === parentId);
 
   const registerForEvent = (eventId: string, userId: string): boolean => {
     const event = events.find(e => e.id === eventId);
@@ -139,11 +188,15 @@ export const EventsProvider: React.FC<EventsProviderProps> = ({ children }) => {
   const value = {
     events,
     addEvent,
+    updateEvent,
+    deleteEvent,
     registerForEvent,
     unregisterFromEvent,
     getEventById,
     getUserEvents,
     getUpcomingEvents,
+    getMainEvents,
+    getSubEvents,
   };
 
   return <EventsContext.Provider value={value}>{children}</EventsContext.Provider>;

@@ -56,6 +56,14 @@ const Header = () => {
                 Criar Evento
               </Link>
             )}
+            <Link 
+              to="/calendar" 
+              className={`text-sm font-medium transition-colors hover:text-primary ${
+                location.pathname === '/calendar' ? 'text-primary' : 'text-muted-foreground'
+              }`}
+            >
+              Calendário
+            </Link>
           </nav>
         </div>
 

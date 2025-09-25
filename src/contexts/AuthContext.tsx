@@ -34,7 +34,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const login = async (email: string, password: string, role: 'organizer' | 'student') => {
     // Mock authentication - accept any email/password
     const mockUser: User = {
-      id: Math.random().toString(36).substr(2, 9),
+      id: role === 'organizer' ? 'organizer-id' : Math.random().toString(36).substr(2, 9),
       name: email.split('@')[0].replace(/[^a-zA-Z ]/g, ' ').replace(/\s+/g, ' ').trim(),
       email,
       role

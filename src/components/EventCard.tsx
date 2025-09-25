@@ -11,6 +11,7 @@ interface EventCardProps {
   isRegistered?: boolean;
   onRegister?: (eventId: string) => void;
   onUnregister?: (eventId: string) => void;
+  linkTo?: string;
 }
 
 const EventCard: React.FC<EventCardProps> = ({
@@ -19,6 +20,7 @@ const EventCard: React.FC<EventCardProps> = ({
   isRegistered = false,
   onRegister,
   onUnregister,
+  linkTo,
 }) => {
   const eventDate = new Date(`${event.date}T${event.time}`);
   const isUpcoming = eventDate > new Date();
@@ -44,7 +46,7 @@ const EventCard: React.FC<EventCardProps> = ({
 
   return (
     <Card className="group hover:shadow-hover transition-all duration-300 bg-gradient-card border-0">
-      <Link to={`/event/${event.id}`}>
+      <Link to={linkTo || `/event/${event.id}`}>
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between">
             <div className="space-y-1 flex-1">

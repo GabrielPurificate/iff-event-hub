@@ -18,11 +18,12 @@ import {
   XCircle
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
 const EventDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
-  const { getEventById, registerForEvent, unregisterFromEvent, getUserEvents } = useEvents();
+  const { getEventById, deleteEvent, registerForEvent, unregisterFromEvent, getUserEvents } = useEvents();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -31,8 +32,17 @@ const EventDetail = () => {
   }
 
   const event = getEventById(id);
+  const parentEvent = event?.parentId ? getEventById(event.parentId) : undefined;
   const userEvents = getUserEvents(user.id);
   const isRegistered = userEvents.some(e => e.id === id);
+  const isOrganizer = user?.id === event?.organizerId;
+
+  const handleDelete = () => {
+    if (!id) return;
+    deleteEvent(id);
+    toast({ title: "Evento deletado com sucesso!" });
+    navigate(parentEvent ? `/event/main/${parentEvent.id}` : '/dashboard');
+  };
 
   if (!event) {
     return (
@@ -139,10 +149,18 @@ const EventDetail = () => {
           {/* Breadcrumb */}
           <div className="flex items-center space-x-2 text-sm text-muted-foreground">
             <Link to="/dashboard" className="hover:text-primary transition-colors">
-              Dashboard
+              Eventos Principais
             </Link>
+            {parentEvent && (
+              <>
+                <span>/</span>
+                <Link to={`/event/main/${parentEvent.id}`} className="hover:text-primary transition-colors">
+                  {parentEvent.title}
+                </Link>
+              </>
+            )}
             <span>/</span>
-            <span className="text-foreground">Detalhes do Evento</span>
+            <span className="text-foreground">{event.title}</span>
           </div>
 
           {/* Back Button */}
@@ -176,10 +194,33 @@ const EventDetail = () => {
                 
                 <CardContent className="space-y-6">
                   <div>
-                    <h3 className="text-lg font-semibold mb-3">Descrição</h3>
                     <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
                       {event.description}
                     </p>
+                    {isOrganizer && (
+                      <div className="flex space-x-4 mt-4">
+                        <Button asChild>
+                          <Link to={`/event/${id}/edit`}>Editar</Link>
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="destructive">Deletar</Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Confirmar exclusão</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Tem certeza que deseja excluir este evento? Esta ação não pode ser desfeita.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogAction onClick={handleDelete}>Deletar</AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    )}
                   </div>
 
                   <Separator />
@@ -275,6 +316,20 @@ const EventDetail = () => {
                   )}
                 </CardContent>
               </Card>
+
+              {parentEvent && (
+                <Card className="bg-gradient-card border-0 shadow-card">
+                  <CardHeader>
+                    <CardTitle className="text-lg">Evento Principal</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <Link to={`/event/main/${parentEvent.id}`} className="font-semibold hover:text-primary">
+                      {parentEvent.title}
+                    </Link>
+                    <p className="text-sm text-muted-foreground line-clamp-2">{parentEvent.description}</p>
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Event Info */}
               <Card className="bg-gradient-card border-0 shadow-card">
