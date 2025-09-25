@@ -1,11 +1,16 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 
+export interface ScheduleEntry {
+  date: string;
+  startTime: string;
+  endTime: string;
+}
+
 export interface Event {
   id: string;
   title: string;
   description: string;
-  date: string;
-  time: string;
+  schedule: ScheduleEntry[];
   organizer: string;
   organizerId: string;
   attendees: string[];
@@ -49,8 +54,12 @@ const mockEvents: Event[] = [
     id: '1',
     title: 'Semana de Tecnologia 2024',
     description: 'Uma semana completa de palestras, workshops e hackathons sobre as mais novas tecnologias.',
-    date: '2024-10-15',
-    time: '08:00',
+    schedule: [
+      { date: '2024-10-15', startTime: '08:00', endTime: '17:00' },
+      { date: '2024-10-16', startTime: '08:00', endTime: '17:00' },
+      { date: '2024-10-17', startTime: '08:00', endTime: '17:00' },
+      { date: '2024-10-18', startTime: '08:00', endTime: '12:00' },
+    ],
     organizer: 'Coordenação de TADS',
     organizerId: 'organizer-id',
     attendees: [],
@@ -64,8 +73,9 @@ const mockEvents: Event[] = [
     id: '2',
     title: 'Workshop de React e Node.js',
     description: 'Aprenda a desenvolver aplicações modernas com React no frontend e Node.js no backend.',
-    date: '2024-10-15',
-    time: '14:00',
+    schedule: [
+      { date: '2024-10-15', startTime: '14:00', endTime: '18:00' },
+    ],
     organizer: 'Prof. Maria Santos',
     organizerId: 'organizer-id',
     attendees: ['user3'],
@@ -79,8 +89,9 @@ const mockEvents: Event[] = [
     id: '3',
     title: 'Palestra sobre Inteligência Artificial',
     description: 'Descubra o futuro da IA e suas aplicações no mercado de trabalho.',
-    date: '2024-10-16',
-    time: '10:00',
+    schedule: [
+      { date: '2024-10-16', startTime: '10:00', endTime: '12:00' },
+    ],
     organizer: 'Prof. Carlos Pereira',
     organizerId: 'organizer-id',
     attendees: [],
@@ -92,10 +103,12 @@ const mockEvents: Event[] = [
   },
   {
     id: '4',
-    title: 'Minicurso de Docker',
-    description: 'Aprenda a containerizar suas aplicações com Docker.',
-    date: '2024-10-17',
-    time: '09:00',
+    title: 'Hackathon de 2 dias',
+    description: 'Resolva um problema real em 2 dias de programação intensa.',
+    schedule: [
+      { date: '2024-10-15', startTime: '18:00', endTime: '19:50' },
+      { date: '2024-10-17', startTime: '18:00', endTime: '22:00' },
+    ],
     organizer: 'Prof. Ana Souza',
     organizerId: 'organizer-id',
     attendees: [],
@@ -181,8 +194,12 @@ export const EventsProvider: React.FC<EventsProviderProps> = ({ children }) => {
   const getUpcomingEvents = () => {
     const now = new Date();
     return events
-      .filter(e => new Date(`${e.date}T${e.time}`) > now)
-      .sort((a, b) => new Date(`${a.date}T${a.time}`).getTime() - new Date(`${b.date}T${b.time}`).getTime());
+      .filter(e => Array.isArray(e.schedule) && e.schedule.length > 0 && e.schedule.some(s => new Date(`${s.date}T${s.startTime}`) > now))
+      .sort((a, b) => {
+        const aDate = new Date(`${a.schedule[0].date}T${a.schedule[0].startTime}`);
+        const bDate = new Date(`${b.schedule[0].date}T${b.schedule[0].startTime}`);
+        return aDate.getTime() - bDate.getTime();
+      });
   };
 
   const value = {

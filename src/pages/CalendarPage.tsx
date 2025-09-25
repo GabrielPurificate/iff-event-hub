@@ -12,11 +12,17 @@ const CalendarPage = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>();
 
   const eventsByDate = events.reduce((acc, event) => {
-    const date = new Date(event.date + 'T00:00:00').toISOString().split('T')[0];
-    if (!acc[date]) {
-      acc[date] = [];
+    if (Array.isArray(event.schedule)) {
+      event.schedule.forEach(s => {
+        const date = new Date(s.date + 'T00:00:00').toISOString().split('T')[0];
+        if (!acc[date]) {
+          acc[date] = [];
+        }
+        if (!acc[date].find(e => e.id === event.id)) {
+          acc[date].push(event);
+        }
+      });
     }
-    acc[date].push(event);
     return acc;
   }, {} as Record<string, typeof events>);
 
@@ -42,7 +48,7 @@ const CalendarPage = () => {
                   onSelect={handleDateSelect}
                   className="w-full"
                   modifiers={{
-                    event: Object.keys(eventsByDate).map(date => new Date(date))
+                    event: Object.keys(eventsByDate).map(dateString => new Date(dateString + 'T00:00:00'))
                   }}
                   modifiersClassNames={{
                     event: 'event-date',
@@ -78,7 +84,9 @@ const CalendarPage = () => {
                                   {isMainEvent ? 'Principal' : 'Sub-evento'}
                                 </Badge>
                               </div>
-                              <p className="text-sm text-muted-foreground">{event.time} - {event.location}</p>
+                              {Array.isArray(event.schedule) && event.schedule.map((s, i) => (
+                                <p key={i} className="text-sm text-muted-foreground">{new Date(s.date + 'T00:00:00').toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit', month: 'short' })} - {s.startTime} às {s.endTime}</p>
+                              ))}
                               {event.category && <Badge variant="outline" className="mt-2">{event.category}</Badge>}
                             </div>
                           </CardContent>

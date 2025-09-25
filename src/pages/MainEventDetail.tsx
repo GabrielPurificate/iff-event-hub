@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import Header from '@/components/Header';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Calendar } from 'lucide-react';
 import EventCard from '@/components/EventCard';
 import { Button } from '@/components/ui/button';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
@@ -90,6 +91,16 @@ const MainEventDetail = () => {
               )}
             </CardHeader>
             <CardContent>
+              <div className="space-y-2 mb-4">
+                {Array.isArray(mainEvent.schedule) && mainEvent.schedule.map((s, i) => (
+                  <div key={i} className="flex items-center space-x-4 text-sm">
+                    <Calendar className="w-5 h-5 text-primary" />
+                    <span className="text-muted-foreground">
+                      {new Date(s.date + 'T00:00:00').toLocaleDateString('pt-BR', { dateStyle: 'long' })} - {s.startTime} às {s.endTime}
+                    </span>
+                  </div>
+                ))}
+              </div>
               <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
                 {mainEvent.description}
               </p>

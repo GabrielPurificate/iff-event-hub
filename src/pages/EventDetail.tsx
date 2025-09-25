@@ -59,25 +59,14 @@ const EventDetail = () => {
     );
   }
 
-  const eventDate = new Date(`${event.date}T${event.time}`);
-  const isUpcoming = eventDate > new Date();
+  const isUpcoming = Array.isArray(event.schedule) && event.schedule.some(s => {
+    const [year, month, day] = s.date.split('-').map(Number);
+    const [hour, minute] = s.startTime.split(':').map(Number);
+    const eventDate = new Date(year, month - 1, day, hour, minute);
+    const now = new Date('2024-09-25T00:00:00');
+    return eventDate > now;
+  });
   const isFull = event.maxAttendees ? event.attendees.length >= event.maxAttendees : false;
-
-  const formatDate = (dateStr: string) => {
-    return new Date(dateStr).toLocaleDateString('pt-BR', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
-
-  const formatTime = (timeStr: string) => {
-    return new Date(`2000-01-01T${timeStr}`).toLocaleTimeString('pt-BR', {
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
 
   const handleRegister = () => {
     if (isRegistered) {
@@ -229,25 +218,15 @@ const EventDetail = () => {
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                     <div className="space-y-4">
-                      <div className="flex items-start space-x-3">
-                        <Calendar className="w-5 h-5 text-primary mt-0.5" />
-                        <div>
-                          <p className="font-medium">Data</p>
-                          <p className="text-muted-foreground capitalize">
-                            {formatDate(event.date)}
-                          </p>
+                      {Array.isArray(event.schedule) && event.schedule.map((s, i) => (
+                        <div key={i} className="flex items-start space-x-3">
+                          <Calendar className="w-5 h-5 text-primary mt-0.5" />
+                          <div>
+                            <p className="font-medium">{new Date(s.date + 'T00:00:00').toLocaleDateString('pt-BR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                            <p className="text-muted-foreground">{s.startTime} - {s.endTime}</p>
+                          </div>
                         </div>
-                      </div>
-
-                      <div className="flex items-start space-x-3">
-                        <Clock className="w-5 h-5 text-primary mt-0.5" />
-                        <div>
-                          <p className="font-medium">Horário</p>
-                          <p className="text-muted-foreground">
-                            {formatTime(event.time)}
-                          </p>
-                        </div>
-                      </div>
+                      ))}
                     </div>
 
                     <div className="space-y-4">

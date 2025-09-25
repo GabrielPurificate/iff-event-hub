@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
-import { useEvents, Event } from '@/contexts/EventsContext';
+import { useEvents, Event, ScheduleEntry } from '@/contexts/EventsContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -29,8 +29,7 @@ const EventForm: React.FC<EventFormProps> = ({ isEditMode = false }) => {
   const [formData, setFormData] = useState<Partial<Event>>({
     title: '',
     description: '',
-    date: '',
-    time: '',
+    schedule: [{ date: '', startTime: '', endTime: '' }],
     location: '',
     category: '',
     maxAttendees: undefined,
@@ -47,6 +46,15 @@ const EventForm: React.FC<EventFormProps> = ({ isEditMode = false }) => {
         setEventType(event.parentId ? 'sub' : 'main');
         setParentId(event.parentId);
       }
+    } else {
+      setFormData({
+        title: '',
+        description: '',
+        schedule: [{ date: '', startTime: '', endTime: '' }],
+        location: '',
+        category: '',
+        maxAttendees: undefined,
+      });
     }
   }, [isEditMode, id, getEventById]);
 
@@ -60,26 +68,51 @@ const EventForm: React.FC<EventFormProps> = ({ isEditMode = false }) => {
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
+  const handleScheduleChange = (index: number, field: keyof ScheduleEntry, value: string) => {
+    const newSchedule = [...(formData.schedule || [])];
+    newSchedule[index] = { ...newSchedule[index], [field]: value };
+    setFormData(prev => ({ ...prev, schedule: newSchedule }));
+  };
+
+  const addScheduleEntry = () => {
+    setFormData(prev => ({ ...prev, schedule: [...(prev.schedule || []), { date: '', startTime: '', endTime: '' }] }));
+  };
+
+  const removeScheduleEntry = (index: number) => {
+    const newSchedule = [...(formData.schedule || [])];
+    newSchedule.splice(index, 1);
+    setFormData(prev => ({ ...prev, schedule: newSchedule }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.title || !formData.description || !formData.date || !formData.time) {
+    if (!formData.title || !formData.description || !formData.schedule || formData.schedule.length === 0) {
       toast({
         title: "Campos obrigatórios",
-        description: "Por favor, preencha todos os campos obrigatórios.",
+        description: "Por favor, preencha todos os campos obrigatórios e adicione pelo menos um agendamento.",
         variant: "destructive",
       });
       return;
     }
 
-    const eventDate = new Date(`${formData.date}T${formData.time}`);
-    if (!isEditMode && eventDate <= new Date()) {
-      toast({
-        title: "Data inválida",
-        description: "O evento deve ser agendado para uma data futura.",
-        variant: "destructive",
-      });
-      return;
+    for (const entry of formData.schedule) {
+      if (!entry.date || !entry.startTime || !entry.endTime) {
+        toast({
+          title: "Agendamento incompleto",
+          description: "Por favor, preencha todos os campos de todos os agendamentos.",
+          variant: "destructive",
+        });
+        return;
+      }
+      if (entry.startTime >= entry.endTime) {
+        toast({
+          title: "Horário inválido",
+          description: `O horário de término (${entry.endTime}) deve ser posterior ao horário de início (${entry.startTime}).`,
+          variant: "destructive",
+        });
+        return;
+      }
     }
 
     setLoading(true);
@@ -232,37 +265,57 @@ const EventForm: React.FC<EventFormProps> = ({ isEditMode = false }) => {
                   />
                 </div>
 
-                {/* Date and Time */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="date" className="flex items-center space-x-2">
-                      <Calendar className="w-4 h-4 text-primary" />
-                      <span>Data *</span>
-                    </Label>
-                    <Input
-                      id="date"
-                      name="date"
-                      type="date"
-                      value={formData.date || ''}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="time" className="flex items-center space-x-2">
-                      <Clock className="w-4 h-4 text-primary" />
-                      <span>Horário *</span>
-                    </Label>
-                    <Input
-                      id="time"
-                      name="time"
-                      type="time"
-                      value={formData.time || ''}
-                      onChange={handleInputChange}
-                      required
-                    />
-                  </div>
+                {/* Schedule */}
+                <div className="space-y-4">
+                  <Label>Agendamentos *</Label>
+                  {formData.schedule?.map((entry, index) => (
+                    <div key={index} className="flex items-end gap-2 p-2 border rounded-lg">
+                      <div className="grid grid-cols-3 gap-2 flex-1">
+                        <div className="space-y-1">
+                          <Label htmlFor={`date-${index}`}>Data</Label>
+                          <Input
+                            id={`date-${index}`}
+                            type="date"
+                            value={entry.date}
+                            onChange={(e) => handleScheduleChange(index, 'date', e.target.value)}
+                            required
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label htmlFor={`startTime-${index}`}>Início</Label>
+                          <Input
+                            id={`startTime-${index}`}
+                            type="time"
+                            value={entry.startTime}
+                            onChange={(e) => handleScheduleChange(index, 'startTime', e.target.value)}
+                            required
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label htmlFor={`endTime-${index}`}>Término</Label>
+                          <Input
+                            id={`endTime-${index}`}
+                            type="time"
+                            value={entry.endTime}
+                            onChange={(e) => handleScheduleChange(index, 'endTime', e.target.value)}
+                            required
+                          />
+                        </div>
+                      </div>
+                      <Button
+                        type="button"
+                        variant="destructive"
+                        size="sm"
+                        onClick={() => removeScheduleEntry(index)}
+                        disabled={formData.schedule.length === 1}
+                      >
+                        Remover
+                      </Button>
+                    </div>
+                  ))}
+                  <Button type="button" variant="outline" onClick={addScheduleEntry} className="w-full">
+                    Adicionar outro horário
+                  </Button>
                 </div>
 
                 {/* Location and Category */}
