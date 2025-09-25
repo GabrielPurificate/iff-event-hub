@@ -11,7 +11,14 @@ import { toast } from '@/hooks/use-toast';
 
 const MainEventDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const { getEventById, getSubEvents, deleteEvent } = useEvents();
+  const { 
+    getEventById, 
+    getSubEvents, 
+    deleteEvent,
+    registerForEvent,
+    unregisterFromEvent,
+    getUserEvents 
+  } = useEvents();
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -21,6 +28,7 @@ const MainEventDetail = () => {
 
   const mainEvent = getEventById(id);
   const subEvents = getSubEvents(id);
+  const userEvents = user ? getUserEvents(user.id) : [];
 
   if (!mainEvent) {
     return <div>Evento principal não encontrado</div>;
@@ -33,6 +41,39 @@ const MainEventDetail = () => {
     toast({ title: "Evento deletado com sucesso!" });
     navigate('/dashboard');
   };
+
+  const handleRegister = (eventId: string) => {
+    if (!user) return;
+    
+    const success = registerForEvent(eventId, user.id);
+    if (success) {
+      toast({
+        title: "Inscrição realizada!",
+        description: "Você foi inscrito no evento com sucesso.",
+      });
+    } else {
+      toast({
+        title: "Erro na inscrição",
+        description: "Não foi possível realizar a inscrição. O evento pode estar lotado.",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleUnregister = (eventId: string) => {
+    if (!user) return;
+    
+    unregisterFromEvent(eventId, user.id);
+    toast({
+      title: "Inscrição cancelada",
+      description: "Sua inscrição foi cancelada com sucesso.",
+    });
+  };
+
+  const isUserRegistered = (eventId: string) => {
+    return user ? userEvents.some(e => e.id === eventId) : false;
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Header />
@@ -83,7 +124,14 @@ const MainEventDetail = () => {
             {subEvents.length > 0 ? (
               <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {subEvents.map(subEvent => (
-                  <EventCard key={subEvent.id} event={subEvent} showRegisterButton={true} />
+                  <EventCard 
+                    key={subEvent.id} 
+                    event={subEvent} 
+                    showRegisterButton={true}
+                    isRegistered={isUserRegistered(subEvent.id)}
+                    onRegister={handleRegister}
+                    onUnregister={handleUnregister}
+                  />
                 ))}
               </div>
             ) : (

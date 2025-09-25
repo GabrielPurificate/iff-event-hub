@@ -31,8 +31,8 @@ const Header = () => {
       <div className="container flex h-16 items-center justify-between px-4">
         <div className="flex items-center space-x-6">
           <Link to="/dashboard" className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-gradient-primary rounded-lg flex items-center justify-center">
-              <Calendar className="w-5 h-5 text-primary-foreground" />
+            <div className="w-8 h-8 rounded-lg flex items-center justify-center">
+              <img src="/IFF_LOGO.png" alt="Logo IFF" />
             </div>
             <span className="font-bold text-lg text-foreground">IFF Eventos</span>
           </Link>

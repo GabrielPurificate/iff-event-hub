@@ -164,9 +164,9 @@ const EventDetail = () => {
           </div>
 
           {/* Back Button */}
-          <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard')}>
+          <Button variant="ghost" size="sm" onClick={() => navigate(`/event/main/${parentEvent.id}`)}>
             <ArrowLeft className="w-4 h-4 mr-2" />
-            Voltar ao Dashboard
+            Voltar ao Evento Principal
           </Button>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
