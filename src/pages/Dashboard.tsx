@@ -13,7 +13,7 @@ import { useToast } from '@/hooks/use-toast';
 
 const Dashboard = () => {
   const { user } = useAuth();
-  const { getMainEvents, registerForEvent, unregisterFromEvent, getUserEvents } = useEvents();
+  const { getMainEvents, registerForEvent, unregisterFromEvent, getUserEvents, joinWaitlist, leaveWaitlist, isUserInWaitlist } = useEvents();
   const { toast } = useToast();
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -52,6 +52,18 @@ const Dashboard = () => {
       title: "Inscrição cancelada",
       description: "Sua inscrição foi cancelada com sucesso.",
     });
+  };
+
+  const handleJoinWaitlist = (eventId: string) => {
+    if (!user) return;
+    joinWaitlist(eventId, user.id);
+    toast({ title: "Você entrou na fila de espera" });
+  };
+
+  const handleLeaveWaitlist = (eventId: string) => {
+    if (!user) return;
+    leaveWaitlist(eventId, user.id);
+    toast({ title: "Você saiu da fila de espera" });
   };
 
   const isUserRegistered = (eventId: string) => {
@@ -145,8 +157,11 @@ const Dashboard = () => {
                     key={event.id}
                     event={event}
                     isRegistered={isUserRegistered(event.id)}
+                    isInWaitlist={isUserInWaitlist(event.id, user.id)}
                     onRegister={handleRegister}
                     onUnregister={handleUnregister}
+                    onJoinWaitlist={handleJoinWaitlist}
+                    onLeaveWaitlist={handleLeaveWaitlist}
                     linkTo={`/event/main/${event.id}`}
                   />
                 ))}

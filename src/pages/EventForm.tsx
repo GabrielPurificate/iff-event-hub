@@ -37,6 +37,7 @@ const EventForm: React.FC<EventFormProps> = ({ isEditMode = false }) => {
 
   const mainEvents = getMainEvents();
   const [loading, setLoading] = useState(false);
+  const [image, setImage] = useState<File | null>(null);
 
   useEffect(() => {
     if (isEditMode && id) {
@@ -54,6 +55,7 @@ const EventForm: React.FC<EventFormProps> = ({ isEditMode = false }) => {
         location: '',
         category: '',
         maxAttendees: undefined,
+        imageUrl: '',
       });
     }
   }, [isEditMode, id, getEventById]);
@@ -66,6 +68,12 @@ const EventForm: React.FC<EventFormProps> = ({ isEditMode = false }) => {
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setImage(e.target.files[0]);
+    }
   };
 
   const handleScheduleChange = (index: number, field: keyof ScheduleEntry, value: string) => {
@@ -120,6 +128,19 @@ const EventForm: React.FC<EventFormProps> = ({ isEditMode = false }) => {
     try {
       // Simulate API delay
       await new Promise(resolve => setTimeout(resolve, 1000));
+
+      let imageUrl = formData.imageUrl;
+      if (image) {
+        const reader = new FileReader();
+        reader.readAsDataURL(image);
+        await new Promise<void>((resolve, reject) => {
+          reader.onload = () => {
+            imageUrl = reader.result as string;
+            resolve();
+          };
+          reader.onerror = reject;
+        });
+      }
       
       const eventData = {
         ...formData,
@@ -127,6 +148,7 @@ const EventForm: React.FC<EventFormProps> = ({ isEditMode = false }) => {
         organizerId: user.id,
         maxAttendees: formData.maxAttendees ? Number(formData.maxAttendees) : undefined,
         parentId: eventType === 'sub' ? parentId : undefined,
+        imageUrl,
       };
 
       if (isEditMode && id) {
@@ -264,6 +286,29 @@ const EventForm: React.FC<EventFormProps> = ({ isEditMode = false }) => {
                     required
                   />
                 </div>
+
+                {/* Image Upload for Main Event */}
+                {eventType === 'main' && (
+                  <div className="space-y-2">
+                    <Label htmlFor="image">Imagem do Evento (Banner)</Label>
+                    <Input
+                      id="image"
+                      name="image"
+                      type="file"
+                      onChange={handleImageChange}
+                      accept="image/*"
+                    />
+                    {(formData.imageUrl || image) && (
+                      <div className="mt-2">
+                        <img 
+                          src={image ? URL.createObjectURL(image) : formData.imageUrl}
+                          alt="Preview do banner"
+                          className="w-full h-auto rounded-lg"
+                        />
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Schedule */}
                 <div className="space-y-4">

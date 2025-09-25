@@ -19,15 +19,20 @@ export interface Event {
   category?: string;
   createdAt: Date;
   parentId?: string;
+  imageUrl?: string;
+  waitlist?: string[];
 }
 
 interface EventsContextType {
   events: Event[];
-  addEvent: (event: Omit<Event, 'id' | 'attendees' | 'createdAt'>) => void;
+  addEvent: (event: Omit<Event, 'id' | 'attendees' | 'createdAt' | 'waitlist'>) => void;
   updateEvent: (eventId: string, eventData: Partial<Event>) => void;
   deleteEvent: (eventId: string) => void;
   registerForEvent: (eventId: string, userId: string) => boolean;
   unregisterFromEvent: (eventId: string, userId: string) => void;
+  joinWaitlist: (eventId: string, userId: string) => void;
+  leaveWaitlist: (eventId: string, userId: string) => void;
+  isUserInWaitlist: (eventId: string, userId: string) => boolean;
   getEventById: (id: string) => Event | undefined;
   getUserEvents: (userId: string) => Event[];
   getUpcomingEvents: () => Event[];
@@ -70,6 +75,7 @@ const mockEvents: Event[] = [
     category: 'Tecnologia',
     createdAt: new Date(`${currentYear}-09-01`),
     parentId: undefined,
+    waitlist: [],
   },
   {
     id: '2',
@@ -86,6 +92,7 @@ const mockEvents: Event[] = [
     category: 'Programação',
     createdAt: new Date(`${currentYear}-09-05`),
     parentId: '1',
+    waitlist: [],
   },
   {
     id: '3',
@@ -102,6 +109,7 @@ const mockEvents: Event[] = [
     category: 'Inteligência Artificial',
     createdAt: new Date(`${currentYear}-09-06`),
     parentId: '1',
+    waitlist: [],
   },
   {
     id: '4',
@@ -119,6 +127,7 @@ const mockEvents: Event[] = [
     category: 'DevOps',
     createdAt: new Date(`${currentYear}-09-07`),
     parentId: '1',
+    waitlist: [],
   },
   {
     id: '5',
@@ -135,6 +144,7 @@ const mockEvents: Event[] = [
     category: 'DevOps',
     createdAt: new Date(`${currentYear}-09-08`),
     parentId: '1',
+    waitlist: [],
   },
   {
     id: '6',
@@ -151,6 +161,7 @@ const mockEvents: Event[] = [
     category: 'Segurança',
     createdAt: new Date(`${currentYear}-09-09`),
     parentId: '1',
+    waitlist: [],
   },
   {
     id: '7',
@@ -167,6 +178,7 @@ const mockEvents: Event[] = [
     category: 'Inovação',
     createdAt: new Date(`${currentYear}-09-10`),
     parentId: '1',
+    waitlist: [],
   }
 ];
 
@@ -178,6 +190,7 @@ export const EventsProvider: React.FC<EventsProviderProps> = ({ children }) => {
       return parsed.map((event: Event) => ({
         ...event,
         createdAt: new Date(event.createdAt),
+        waitlist: event.waitlist || [],
       }));
     }
     return mockEvents;
@@ -188,12 +201,13 @@ export const EventsProvider: React.FC<EventsProviderProps> = ({ children }) => {
     localStorage.setItem('iff-events', JSON.stringify(events));
   }, [events]);
 
-  const addEvent = (eventData: Omit<Event, 'id' | 'attendees' | 'createdAt'>) => {
+  const addEvent = (eventData: Omit<Event, 'id' | 'attendees' | 'createdAt' | 'waitlist'>) => {
     const newEvent: Event = {
       ...eventData,
       id: Math.random().toString(36).substr(2, 9),
       attendees: [],
       createdAt: new Date(),
+      waitlist: [],
     };
     setEvents(prev => [...prev, newEvent]);
   };
@@ -256,6 +270,27 @@ export const EventsProvider: React.FC<EventsProviderProps> = ({ children }) => {
     ));
   };
 
+  const joinWaitlist = (eventId: string, userId: string) => {
+    setEvents(prev => prev.map(e => 
+      e.id === eventId && !e.waitlist?.includes(userId)
+        ? { ...e, waitlist: [...(e.waitlist || []), userId] }
+        : e
+    ));
+  };
+
+  const leaveWaitlist = (eventId: string, userId: string) => {
+    setEvents(prev => prev.map(e => 
+      e.id === eventId 
+        ? { ...e, waitlist: e.waitlist?.filter(id => id !== userId) }
+        : e
+    ));
+  };
+
+  const isUserInWaitlist = (eventId: string, userId: string): boolean => {
+    const event = events.find(e => e.id === eventId);
+    return event?.waitlist?.includes(userId) || false;
+  };
+
   const getEventById = (id: string) => events.find(e => e.id === id);
 
   const getUserEvents = (userId: string) => 
@@ -279,6 +314,9 @@ export const EventsProvider: React.FC<EventsProviderProps> = ({ children }) => {
     deleteEvent,
     registerForEvent,
     unregisterFromEvent,
+    joinWaitlist,
+    leaveWaitlist,
+    isUserInWaitlist,
     getEventById,
     getUserEvents,
     getUpcomingEvents,

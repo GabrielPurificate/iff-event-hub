@@ -24,7 +24,7 @@ import QRCodeDialog from '@/components/QRCodeDialog';
 const EventDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
-  const { getEventById, deleteEvent, registerForEvent, unregisterFromEvent, getUserEvents } = useEvents();
+  const { getEventById, deleteEvent, registerForEvent, unregisterFromEvent, getUserEvents, joinWaitlist, leaveWaitlist, isUserInWaitlist } = useEvents();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -36,6 +36,7 @@ const EventDetail = () => {
   const parentEvent = event?.parentId ? getEventById(event.parentId) : undefined;
   const userEvents = getUserEvents(user.id);
   const isRegistered = userEvents.some(e => e.id === id);
+  const inWaitlist = isUserInWaitlist(id, user.id);
   const isOrganizer = user?.id === event?.organizerId;
 
   const handleDelete = () => {
@@ -74,6 +75,18 @@ const EventDetail = () => {
         title: "Inscrição cancelada",
         description: "Sua inscrição foi cancelada com sucesso.",
       });
+    } else if (isFull) {
+      if (inWaitlist) {
+        leaveWaitlist(event.id, user.id);
+        toast({
+          title: "Você saiu da fila de espera",
+        });
+      } else {
+        joinWaitlist(event.id, user.id);
+        toast({
+          title: "Você entrou na fila de espera",
+        });
+      }
     } else {
       const success = registerForEvent(event.id, user.id);
       if (success) {
@@ -111,11 +124,19 @@ const EventDetail = () => {
     }
     
     if (isFull) {
+      if (inWaitlist) {
+        return {
+          icon: <CheckCircle className="w-5 h-5" />,
+          text: "Sair da Fila de Espera",
+          variant: "outline" as const,
+          disabled: false
+        };
+      }
       return {
         icon: <AlertCircle className="w-5 h-5" />,
-        text: "Evento Lotado",
-        variant: "outline" as const,
-        disabled: true
+        text: "Entrar na Fila de Espera",
+        variant: "default" as const,
+        disabled: false
       };
     }
     
@@ -291,6 +312,13 @@ const EventDetail = () => {
                     <div className="p-3 bg-primary/10 border border-primary/20 rounded-lg">
                       <p className="text-sm text-primary font-medium">
                         ✓ Você está inscrito neste evento
+                      </p>
+                    </div>
+                  )}
+                  {inWaitlist && isUpcoming && (
+                    <div className="p-3 bg-yellow-400/10 border border-yellow-400/20 rounded-lg">
+                      <p className="text-sm text-yellow-500 font-medium">
+                        Você está na fila de espera.
                       </p>
                     </div>
                   )}

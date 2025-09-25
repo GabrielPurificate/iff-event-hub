@@ -9,8 +9,11 @@ interface EventCardProps {
   event: Event;
   showRegisterButton?: boolean;
   isRegistered?: boolean;
+  isInWaitlist?: boolean;
   onRegister?: (eventId: string) => void;
   onUnregister?: (eventId: string) => void;
+  onJoinWaitlist?: (eventId: string) => void;
+  onLeaveWaitlist?: (eventId: string) => void;
   linkTo?: string;
 }
 
@@ -18,8 +21,11 @@ const EventCard: React.FC<EventCardProps> = ({
   event,
   showRegisterButton = false,
   isRegistered = false,
+  isInWaitlist = false,
   onRegister,
   onUnregister,
+  onJoinWaitlist,
+  onLeaveWaitlist,
   linkTo,
 }) => {
   const isUpcoming = Array.isArray(event.schedule) && event.schedule.some(s => {
@@ -35,14 +41,36 @@ const EventCard: React.FC<EventCardProps> = ({
     e.stopPropagation();
     if (isRegistered && onUnregister) {
       onUnregister(event.id);
+    } else if (isFull && !isRegistered) {
+      if (isInWaitlist && onLeaveWaitlist) {
+        onLeaveWaitlist(event.id);
+      } else if (!isInWaitlist && onJoinWaitlist) {
+        onJoinWaitlist(event.id);
+      }
     } else if (onRegister) {
       onRegister(event.id);
     }
   };
 
+  const getButtonContent = () => {
+    if (isFull && !isRegistered) {
+      return isInWaitlist ? 'Sair da Fila de Espera' : 'Entrar na Fila de Espera';
+    }
+    return isRegistered ? 'Cancelar Inscrição' : 'Inscrever-se';
+  };
+
   return (
-    <Card className="group hover:shadow-hover transition-all duration-300 bg-gradient-card border-0">
-      <Link to={linkTo || `/event/${event.id}`}>
+    <Card className="group hover:shadow-hover transition-all duration-300 bg-gradient-card border-0 flex flex-col">
+      <Link to={linkTo || `/event/${event.id}`} className="flex flex-col h-full">
+        {event.imageUrl && (
+          <div className="relative w-full h-32 overflow-hidden rounded-t-lg">
+            <img 
+              src={event.imageUrl} 
+              alt={event.title} 
+              className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+            />
+          </div>
+        )}
         <CardHeader className="pb-3">
           <div className="flex items-start justify-between">
             <div className="space-y-1 flex-1">
@@ -108,16 +136,9 @@ const EventCard: React.FC<EventCardProps> = ({
             <Button
               onClick={handleRegisterClick}
               className="w-full shadow-button"
-              variant={isRegistered ? "outline" : "default"}
-              disabled={!isRegistered && isFull}
+              variant={isRegistered || isInWaitlist ? "outline" : "default"}
             >
-              {isFull && !isRegistered ? (
-                'Evento Lotado'
-              ) : isRegistered ? (
-                'Cancelar Inscrição'
-              ) : (
-                'Inscrever-se'
-              )}
+              {getButtonContent()}
             </Button>
           </CardFooter>
         )}

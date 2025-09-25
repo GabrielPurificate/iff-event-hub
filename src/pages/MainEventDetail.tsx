@@ -19,7 +19,10 @@ const MainEventDetail = () => {
     deleteEvent,
     registerForEvent,
     unregisterFromEvent,
-    getUserEvents 
+    getUserEvents,
+    joinWaitlist,
+    leaveWaitlist,
+    isUserInWaitlist
   } = useEvents();
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -72,6 +75,18 @@ const MainEventDetail = () => {
     });
   };
 
+  const handleJoinWaitlist = (eventId: string) => {
+    if (!user) return;
+    joinWaitlist(eventId, user.id);
+    toast({ title: "Você entrou na fila de espera" });
+  };
+
+  const handleLeaveWaitlist = (eventId: string) => {
+    if (!user) return;
+    leaveWaitlist(eventId, user.id);
+    toast({ title: "Você saiu da fila de espera" });
+  };
+
   const isUserRegistered = (eventId: string) => {
     return user ? userEvents.some(e => e.id === eventId) : false;
   };
@@ -81,6 +96,15 @@ const MainEventDetail = () => {
       <Header />
       <main className="container mx-auto px-4 py-8">
         <div className="space-y-8">
+          {mainEvent.imageUrl && (
+            <div className="w-full h-64 md:h-96 rounded-2xl overflow-hidden shadow-lg">
+              <img 
+                src={mainEvent.imageUrl} 
+                alt={mainEvent.title} 
+                className="w-full h-full object-cover"
+              />
+            </div>
+          )}
           <Card className="bg-gradient-card border-0 shadow-card">
             <CardHeader>
               <CardTitle className="text-2xl lg:text-3xl">{mainEvent.title}</CardTitle>
@@ -142,8 +166,11 @@ const MainEventDetail = () => {
                     event={subEvent} 
                     showRegisterButton={true}
                     isRegistered={isUserRegistered(subEvent.id)}
+                    isInWaitlist={isUserInWaitlist(subEvent.id, user.id)}
                     onRegister={handleRegister}
                     onUnregister={handleUnregister}
+                    onJoinWaitlist={handleJoinWaitlist}
+                    onLeaveWaitlist={handleLeaveWaitlist}
                   />
                 ))}
               </div>
