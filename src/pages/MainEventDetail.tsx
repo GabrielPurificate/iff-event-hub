@@ -56,7 +56,7 @@ const MainEventDetail = () => {
     } else {
       toast({
         title: "Erro na inscrição",
-        description: "Não foi possível realizar a inscrição. O evento pode estar lotado.",
+        description: "Não foi possível realizar a inscrição. Verifique se há conflito de horário com outros eventos em que você já está inscrito ou se o evento está lotado.",
         variant: "destructive",
       });
     }

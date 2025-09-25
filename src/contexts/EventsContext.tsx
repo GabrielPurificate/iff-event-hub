@@ -119,6 +119,54 @@ const mockEvents: Event[] = [
     category: 'DevOps',
     createdAt: new Date(`${currentYear}-09-07`),
     parentId: '1',
+  },
+  {
+    id: '5',
+    title: 'Introdução ao Docker',
+    description: 'Aprenda os conceitos básicos de Docker e como containerizar suas aplicações.',
+    schedule: [
+      { date: `${currentYear}-10-16`, startTime: '14:00', endTime: '16:00' },
+    ],
+    organizer: 'Prof. João Silva',
+    organizerId: 'organizer-id',
+    attendees: [],
+    maxAttendees: 40,
+    location: 'Laboratório de Informática 2',
+    category: 'DevOps',
+    createdAt: new Date(`${currentYear}-09-08`),
+    parentId: '1',
+  },
+  {
+    id: '6',
+    title: 'Palestra sobre Segurança da Informação',
+    description: 'Entenda os principais desafios e como se proteger no mundo digital.',
+    schedule: [
+      { date: `${currentYear}-10-16`, startTime: '10:30', endTime: '11:30' },
+    ],
+    organizer: 'Especialista em Segurança Convidado',
+    organizerId: 'organizer-id',
+    attendees: [],
+    maxAttendees: 100,
+    location: 'Auditório Secundário',
+    category: 'Segurança',
+    createdAt: new Date(`${currentYear}-09-09`),
+    parentId: '1',
+  },
+  {
+    id: '7',
+    title: 'Oficina de Design Thinking',
+    description: 'Uma abordagem prática para resolver problemas de forma criativa e inovadora.',
+    schedule: [
+      { date: `${currentYear}-10-17`, startTime: '09:00', endTime: '12:00' },
+    ],
+    organizer: 'Designer Joana Lima',
+    organizerId: 'organizer-id',
+    attendees: [],
+    maxAttendees: 25,
+    location: 'Sala de Reuniões 1',
+    category: 'Inovação',
+    createdAt: new Date(`${currentYear}-09-10`),
+    parentId: '1',
   }
 ];
 
@@ -163,19 +211,39 @@ export const EventsProvider: React.FC<EventsProviderProps> = ({ children }) => {
   const getSubEvents = (parentId: string) => events.filter(e => e.parentId === parentId);
 
   const registerForEvent = (eventId: string, userId: string): boolean => {
-    const event = events.find(e => e.id === eventId);
-    if (!event) return false;
-    
-    if (event.attendees.includes(userId)) return false;
-    
-    if (event.maxAttendees && event.attendees.length >= event.maxAttendees) {
+    const eventToRegister = events.find(e => e.id === eventId);
+    if (!eventToRegister) return false;
+
+    if (eventToRegister.attendees.includes(userId)) return false;
+
+    if (eventToRegister.maxAttendees && eventToRegister.attendees.length >= eventToRegister.maxAttendees) {
       return false; // Event is full
+    }
+
+    const userEvents = events.filter(e => e.attendees.includes(userId));
+
+    for (const userEvent of userEvents) {
+      for (const userSchedule of userEvent.schedule) {
+        for (const newSchedule of eventToRegister.schedule) {
+          if (userSchedule.date === newSchedule.date) {
+            const userStart = new Date(`${userSchedule.date}T${userSchedule.startTime}`);
+            const userEnd = new Date(`${userSchedule.date}T${userSchedule.endTime}`);
+            const newStart = new Date(`${newSchedule.date}T${newSchedule.startTime}`);
+            const newEnd = new Date(`${newSchedule.date}T${newSchedule.endTime}`);
+
+            if (newStart < userEnd && newEnd > userStart) {
+              console.error('Conflict detected');
+              return false; // Conflict detected
+            }
+          }
+        }
+      }
     }
 
     setEvents(prev => prev.map(e => 
       e.id === eventId 
         ? { ...e, attendees: [...e.attendees, userId] }
-        : e
+                : e
     ));
     return true;
   };
