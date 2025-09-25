@@ -49,16 +49,18 @@ interface EventsProviderProps {
   children: ReactNode;
 }
 
+const currentYear = new Date().getFullYear();
+
 const mockEvents: Event[] = [
   {
     id: '1',
-    title: 'Semana de Tecnologia 2024',
+    title: `Semana de Tecnologia ${currentYear}`,
     description: 'Uma semana completa de palestras, workshops e hackathons sobre as mais novas tecnologias.',
     schedule: [
-      { date: '2024-10-15', startTime: '08:00', endTime: '17:00' },
-      { date: '2024-10-16', startTime: '08:00', endTime: '17:00' },
-      { date: '2024-10-17', startTime: '08:00', endTime: '17:00' },
-      { date: '2024-10-18', startTime: '08:00', endTime: '12:00' },
+      { date: `${currentYear}-10-15`, startTime: '08:00', endTime: '17:00' },
+      { date: `${currentYear}-10-16`, startTime: '08:00', endTime: '17:00' },
+      { date: `${currentYear}-10-17`, startTime: '08:00', endTime: '17:00' },
+      { date: `${currentYear}-10-18`, startTime: '08:00', endTime: '12:00' },
     ],
     organizer: 'Coordenação de TADS',
     organizerId: 'organizer-id',
@@ -66,7 +68,7 @@ const mockEvents: Event[] = [
     maxAttendees: 500,
     location: 'IFF Campos Centro',
     category: 'Tecnologia',
-    createdAt: new Date('2024-09-01'),
+    createdAt: new Date(`${currentYear}-09-01`),
     parentId: undefined,
   },
   {
@@ -74,7 +76,7 @@ const mockEvents: Event[] = [
     title: 'Workshop de React e Node.js',
     description: 'Aprenda a desenvolver aplicações modernas com React no frontend e Node.js no backend.',
     schedule: [
-      { date: '2024-10-15', startTime: '14:00', endTime: '18:00' },
+      { date: `${currentYear}-10-15`, startTime: '14:00', endTime: '18:00' },
     ],
     organizer: 'Prof. Maria Santos',
     organizerId: 'organizer-id',
@@ -82,7 +84,7 @@ const mockEvents: Event[] = [
     maxAttendees: 30,
     location: 'Laboratório de Informática 1',
     category: 'Programação',
-    createdAt: new Date('2024-09-05'),
+    createdAt: new Date(`${currentYear}-09-05`),
     parentId: '1',
   },
   {
@@ -90,7 +92,7 @@ const mockEvents: Event[] = [
     title: 'Palestra sobre Inteligência Artificial',
     description: 'Descubra o futuro da IA e suas aplicações no mercado de trabalho.',
     schedule: [
-      { date: '2024-10-16', startTime: '10:00', endTime: '12:00' },
+      { date: `${currentYear}-10-16`, startTime: '10:00', endTime: '12:00' },
     ],
     organizer: 'Prof. Carlos Pereira',
     organizerId: 'organizer-id',
@@ -98,7 +100,7 @@ const mockEvents: Event[] = [
     maxAttendees: 100,
     location: 'Auditório Principal',
     category: 'Inteligência Artificial',
-    createdAt: new Date('2024-09-06'),
+    createdAt: new Date(`${currentYear}-09-06`),
     parentId: '1',
   },
   {
@@ -106,8 +108,8 @@ const mockEvents: Event[] = [
     title: 'Hackathon de 2 dias',
     description: 'Resolva um problema real em 2 dias de programação intensa.',
     schedule: [
-      { date: '2024-10-15', startTime: '18:00', endTime: '19:50' },
-      { date: '2024-10-17', startTime: '18:00', endTime: '22:00' },
+      { date: `${currentYear}-10-15`, startTime: '18:00', endTime: '19:50' },
+      { date: `${currentYear}-10-17`, startTime: '18:00', endTime: '22:00' },
     ],
     organizer: 'Prof. Ana Souza',
     organizerId: 'organizer-id',
@@ -115,7 +117,7 @@ const mockEvents: Event[] = [
     maxAttendees: 25,
     location: 'Laboratório de Redes',
     category: 'DevOps',
-    createdAt: new Date('2024-09-07'),
+    createdAt: new Date(`${currentYear}-09-07`),
     parentId: '1',
   }
 ];

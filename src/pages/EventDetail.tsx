@@ -63,8 +63,7 @@ const EventDetail = () => {
     const [year, month, day] = s.date.split('-').map(Number);
     const [hour, minute] = s.startTime.split(':').map(Number);
     const eventDate = new Date(year, month - 1, day, hour, minute);
-    const now = new Date('2024-09-25T00:00:00');
-    return eventDate > now;
+    return eventDate > new Date();
   });
   const isFull = event.maxAttendees ? event.attendees.length >= event.maxAttendees : false;
 
